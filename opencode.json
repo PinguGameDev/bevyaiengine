@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcpServers": {
+    "ai-native-engine": {
+      "command": "cargo",
+      "args": ["run", "--manifest-path", "C:/dev/bevyaiengine/ai_native_engine/Cargo.toml"],
+      "cwd": "C:/dev/bevyaiengine/ai_native_engine"
+    }
+  }
+}
