@@ -1,8 +1,10 @@
+mod dashboard;
 mod entity_registry;
 mod mcp_server;
 mod scene;
 
 use bevy::prelude::*;
+use dashboard::DashboardPlugin;
 use entity_registry::EntityRegistry;
 use mcp_server::{McpChannel, McpPlugin};
 use scene::{rotate_cube, setup_scene};
@@ -13,6 +15,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<EntityRegistry>()
         .add_plugins(McpPlugin)
+        .add_plugins(DashboardPlugin)
         .add_systems(Startup, setup_scene)
         .add_systems(Update, rotate_cube)
         .add_systems(Update, process_mcp_commands)
@@ -35,7 +38,7 @@ fn process_mcp_commands(
         let response = match cmd.command.as_str() {
             "create_entity" => {
                 let name = cmd.args[0].clone();
-                let entity = commands.spawn_empty().id();
+                let entity = commands.spawn(Name::new(name.clone())).id();
                 match registry.register(name.clone(), entity) {
                     Ok(_) => format!("Entity '{}' created", name),
                     Err(e) => e,
@@ -120,6 +123,7 @@ fn process_mcp_commands(
                 };
 
                 let entity = commands.spawn((
+                    Name::new(name.clone()),
                     Mesh3d(meshes.add(Cuboid::default())),
                     MeshMaterial3d(materials.add(StandardMaterial {
                         base_color: color_value,
@@ -141,6 +145,7 @@ fn process_mcp_commands(
                 let intensity: f32 = cmd.args[4].parse().unwrap_or(1_000_000.0);
 
                 let entity = commands.spawn((
+                    Name::new(name.clone()),
                     PointLight { intensity, ..default() },
                     Transform::from_xyz(x, y, z),
                 )).id();
@@ -157,6 +162,7 @@ fn process_mcp_commands(
                 let z: f32 = cmd.args[3].parse().unwrap_or(0.0);
 
                 let entity = commands.spawn((
+                    Name::new(name.clone()),
                     Camera3d::default(),
                     Transform::from_xyz(x, y, z).looking_at(Vec3::ZERO, Vec3::Y),
                 )).id();

@@ -30,4 +30,8 @@ impl EntityRegistry {
     pub fn contains(&self, name: &str) -> bool {
         self.entities.contains_key(name)
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&String, &Entity)> {
+        self.entities.iter()
+    }
 }

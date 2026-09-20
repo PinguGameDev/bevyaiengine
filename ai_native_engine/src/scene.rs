@@ -11,12 +11,14 @@ pub fn setup_scene(
     mut registry: ResMut<EntityRegistry>,
 ) {
     let camera = commands.spawn((
+        Name::new("starter_camera"),
         Camera3d::default(),
         Transform::from_xyz(0.0, 2.5, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
     )).id();
     let _ = registry.register("starter_camera".to_string(), camera);
 
     let light = commands.spawn((
+        Name::new("starter_light"),
         PointLight {
             intensity: 1_000_000.0,
             ..default()
@@ -26,6 +28,7 @@ pub fn setup_scene(
     let _ = registry.register("starter_light".to_string(), light);
 
     let bright_overhead_light = commands.spawn((
+        Name::new("bright_overhead_light"),
         DirectionalLight {
             illuminance: light_consts::lux::AMBIENT_DAYLIGHT,
             shadow_maps_enabled: true,
@@ -36,6 +39,7 @@ pub fn setup_scene(
     let _ = registry.register("bright_overhead_light".to_string(), bright_overhead_light);
 
     let cube = commands.spawn((
+        Name::new("starter_cube"),
         Mesh3d(meshes.add(Cuboid::default())),
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::srgb(0.8, 0.2, 0.2),
@@ -54,6 +58,7 @@ pub fn setup_scene(
     ];
     for (name, color, pos) in colored_cubes {
         let entity = commands.spawn((
+            Name::new(name),
             Mesh3d(meshes.add(Cuboid::default())),
             MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: color,
