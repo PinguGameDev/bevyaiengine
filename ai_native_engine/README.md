@@ -1,6 +1,6 @@
 # AI-Native Engine
 
-An Action RPG game engine built in Rust with Bevy, designed to be driven by AI agents through a structured tool interface.
+An Action RPG game engine built in Rust with Bevy, driven by AI agents through an MCP (Model Context Protocol) tool interface over stdio.
 
 ## What is this?
 
@@ -32,28 +32,96 @@ cd ai_native_engine
 cargo run
 ```
 
-The first build downloads and compiles all Bevy dependencies and may take 10-20 minutes. Subsequent builds are much faster.
+The first build downloads and compiles all dependencies and may take 10-20 minutes. Subsequent builds are much faster (~1 min).
 
-You should see a window titled **ai_native_engine** with a rotating red cube.
+You should see a window titled **ai_native_engine** with a rotating red cube. The MCP server starts automatically on stdio.
 
 ## Project Structure
 
 ```
 ai_native_engine/
-├── Cargo.toml          # Rust project configuration and Bevy dependency
-├── .gitignore          # Excludes target/ and Cargo.lock
-├── NEXT_STEPS.md       # Upcoming work and roadmap
-├── FEATURES.md         # Current and planned features
-├── README.md           # This file
+├── Cargo.toml              # Dependencies: bevy, tokio, reqwest, serde, serde_json
+├── FEATURES.md             # Feature status tracker
+├── NEXT_STEPS.md           # Upcoming work and roadmap
+├── README.md               # This file
 └── src/
-    └── main.rs         # Entry point and starter scene
+    ├── main.rs             # Entry point, Bevy app setup, MCP command processor
+    ├── scene.rs            # Starter scene (camera, light, rotating cube)
+    ├── entity_registry.rs  # Named entity registry (HashMap<String, Entity>)
+    └── mcp_server.rs       # JSON-RPC MCP server over stdio transport
 ```
 
-## Current Capabilities
+## MCP Server
 
-- Open a 3D window with Bevy's default plugins
-- Render a PBR-lit scene with a camera, point light, and rotating cube
-- Compile and run on Windows with Vulkan backend
+The engine exposes a JSON-RPC 2.0 MCP server over stdio. AI agents (Claude Desktop, Codex, OpenCode) can connect and call tools to manipulate the scene in real-time.
+
+### Connecting an AI Agent
+
+Configure your MCP client to launch the engine as a stdio server:
+
+```json
+{
+  "mcpServers": {
+    "ai-native-engine": {
+      "command": "cargo",
+      "args": ["run", "--manifest-path", "C:/dev/bevyaiengine/ai_native_engine/Cargo.toml"]
+    }
+  }
+}
+```
+
+### Available Tools
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `create_entity` | `name` | Spawn a named empty entity |
+| `delete_entity` | `name` | Remove entity by name |
+| `set_transform` | `name, x, y, z` | Move an entity to a position |
+| `rotate_entity` | `name, x, y, z` | Rotate an entity (degrees) |
+| `scale_entity` | `name, x, y, z` | Scale an entity |
+| `create_cube` | `name, x, y, z, color` | Spawn a colored cube (red/green/blue/yellow/white/gray) |
+| `create_light` | `name, x, y, z, intensity` | Spawn a point light |
+| `create_camera` | `name, x, y, z` | Spawn a 3D camera looking at origin |
+| `list_entities` | — | List all registered entities |
+| `screenshot` | — | Capture rendered frame (not yet implemented) |
+
+### Example MCP Session
+
+```json
+{"jsonrpc":"2.0","method":"initialize","params":{},"id":1}
+{"jsonrpc":"2.0","method":"tools/call","params":{"name":"create_cube","arguments":{"name":"red_box","x":2.0,"y":0.0,"z":0.0,"color":"red"}},"id":2}
+{"jsonrpc":"2.0","method":"tools/call","params":{"name":"create_light","arguments":{"name":"main_light","x":0.0,"y":5.0,"z":0.0,"intensity":2000000.0}},"id":3}
+{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_entities","arguments":{}},"id":4}
+```
+
+## Tested and Working
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Engine startup | Working | Vulkan backend, NVIDIA/AMD/Intel GPUs supported |
+| 3D window | Working | Opens with starter scene (camera, light, rotating cube) |
+| MCP server (stdio) | Working | JSON-RPC 2.0, runs in separate thread |
+| MCP initialize | Working | Returns protocol version and server info |
+| MCP tools/list | Working | Returns all 10 tools with JSON schemas |
+| create_entity | Working | Creates named entity, rejects duplicate names |
+| delete_entity | Working | Removes entity, handles missing entities gracefully |
+| set_transform | Working | Moves entity, handles missing entities |
+| rotate_entity | Working | Rotates entity with Euler angles (degrees) |
+| scale_entity | Working | Scales entity uniformly or per-axis |
+| create_cube | Working | Supports 6 named colors |
+| create_light | Working | Configurable intensity |
+| create_camera | Working | Auto-aims at origin |
+| list_entities | Working | Returns comma-separated entity names |
+| screenshot | Not implemented | Returns placeholder message |
+| Duplicate name detection | Working | Returns error if entity name already exists |
+| Error handling | Working | Graceful messages for missing entities and unknown commands |
+
+## Known Issues
+
+- **rotate_entity / scale_entity** replace the full Transform, which can lose position or rotation data. These should compose with the existing transform instead.
+- **screenshot** is a placeholder — Bevy's screenshot API needs to be wired up.
+- **Starter scene entities** (the default camera, light, and cube) are not registered in the EntityRegistry, so they cannot be manipulated via MCP tools. Only entities created through MCP tools are tracked.
+- **blocking_lock()** is used to read MCP commands inside a Bevy system. This works but could cause frame hitches under heavy MCP traffic.
 
 ## Usage
 
@@ -100,9 +168,17 @@ bevy = { version = "0.19.1", features = ["dynamic_linking"] }
 
 Note: `dynamic_linking` should not be used for release builds.
 
-## Next Steps
+## Roadmap
 
-See [NEXT_STEPS.md](./NEXT_STEPS.md) for the detailed roadmap. The immediate priority is adding an MCP server so an AI agent can manipulate scenes through tools.
+See [NEXT_STEPS.md](./NEXT_STEPS.md) and [FEATURES.md](./FEATURES.md) for the detailed roadmap. Key upcoming work:
+
+- Implement screenshot tool
+- Fix rotate/scale to compose with existing transforms
+- Register starter scene entities in EntityRegistry
+- Add Jev AI decision layer (tool routing, guardrails, content scoring)
+- Build ARPG systems (combat, enemy AI, quests, inventory)
+- glTF asset pipeline
+- Scene viewer / property inspector
 
 ## License
 

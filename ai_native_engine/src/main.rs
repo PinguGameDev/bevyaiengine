@@ -25,6 +25,7 @@ fn process_mcp_commands(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut registry: ResMut<EntityRegistry>,
     mcp_channel: Option<Res<McpChannel>>,
+    transforms: Query<&Transform>,
 ) {
     let Some(channel) = mcp_channel else { return };
 
@@ -70,10 +71,15 @@ fn process_mcp_commands(
                 let z: f32 = cmd.args[3].parse().unwrap_or(0.0);
                 match registry.get(name) {
                     Some(entity) => {
-                        commands.entity(entity).insert(Transform::from_rotation(
-                            Quat::from_euler(bevy::math::EulerRot::XYZ, x.to_radians(), y.to_radians(), z.to_radians())
-                        ));
-                        format!("Entity '{}' rotated", name)
+                        let current = transforms.get(entity).copied().unwrap_or_default();
+                        let rotation = Quat::from_euler(bevy::math::EulerRot::XYZ, x.to_radians(), y.to_radians(), z.to_radians());
+                        let new_rotation = current.rotation * rotation;
+                        commands.entity(entity).insert(Transform {
+                            translation: current.translation,
+                            rotation: new_rotation,
+                            scale: current.scale,
+                        });
+                        format!("Entity '{}' rotated by ({}, {}, {}) degrees", name, x, y, z)
                     }
                     None => format!("Entity '{}' not found", name),
                 }
@@ -85,8 +91,14 @@ fn process_mcp_commands(
                 let z: f32 = cmd.args[3].parse().unwrap_or(1.0);
                 match registry.get(name) {
                     Some(entity) => {
-                        commands.entity(entity).insert(Transform::from_scale(Vec3::new(x, y, z)));
-                        format!("Entity '{}' scaled to ({}, {}, {})", name, x, y, z)
+                        let current = transforms.get(entity).copied().unwrap_or_default();
+                        let new_scale = current.scale * Vec3::new(x, y, z);
+                        commands.entity(entity).insert(Transform {
+                            translation: current.translation,
+                            rotation: current.rotation,
+                            scale: new_scale,
+                        });
+                        format!("Entity '{}' scaled by ({}, {}, {})", name, x, y, z)
                     }
                     None => format!("Entity '{}' not found", name),
                 }
@@ -163,7 +175,7 @@ fn process_mcp_commands(
                 }
             }
             "screenshot" => {
-                "Screenshot functionality not yet implemented".to_string()
+                "Screenshot functionality is not yet implemented. This feature will be added in a future update.".to_string()
             }
             _ => format!("Unknown command: {}", cmd.command),
         };
