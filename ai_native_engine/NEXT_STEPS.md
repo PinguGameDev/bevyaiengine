@@ -21,7 +21,7 @@ Goal: enable an AI agent to manipulate the Bevy scene through a structured tool 
 - [x] Document the tool schema (JSON-RPC / MCP)
 - [x] Validate that an LLM can call these tools and modify the running scene
 
-## Immediate: Developer Dashboard (Weeks 3-5)
+## Completed: Developer Dashboard (Weeks 3-5)
 
 Goal: build a real-time observation and control surface for watching the AI work and making manual adjustments.
 
@@ -29,20 +29,22 @@ Goal: build a real-time observation and control surface for watching the AI work
 
 ### Dashboard Panels
 
-- [ ] **AI Conversation Log** — scrollable panel showing the full conversation between user and AI agent, with tool calls highlighted as they execute
-- [ ] **Entity List** — clickable list of all entities from EntityRegistry, with type icons and filter/search
-- [ ] **Property Inspector** — show Transform (position, rotation, scale) and components for selected entity, allow inline edits
-- [ ] **System Log** — bottom strip showing Bevy logs and MCP events, filterable by level (INFO/WARN/ERROR)
+- [x] **Entity List** — clickable list of all entities from EntityRegistry, with type icons and filter/search
+- [x] **Property Inspector** — show Transform (position, rotation, scale) and components for selected entity
+- [x] **System Log** — bottom strip showing Bevy logs and MCP events, filterable by level (INFO/WARN/ERROR)
+- [x] **MCP Message Log** — bottom panel showing MCP tool call history
+- [x] **Menu Bar** — top menu for toggling panel visibility
+- [ ] **AI Conversation Log** — scrollable panel showing the full conversation between user and AI agent (future enhancement)
 - [ ] **Viewport Camera Controls** — orbit camera (pan/zoom/rotate around scene) for better spatial understanding
 
 ### Architecture
 
-- [ ] Add `bevy_egui` dependency
-- [ ] Create dashboard plugin with egui panels
-- [ ] Add MCP message log ring buffer (capture all tool calls and responses)
-- [ ] Wire entity list to EntityRegistry
-- [ ] Wire property inspector to ECS Transform queries
-- [ ] Hook into Bevy's LogPlugin for system log panel
+- [x] Add `bevy_egui` dependency
+- [x] Create dashboard plugin with egui panels
+- [x] Add MCP message log ring buffer (capture all tool calls and responses)
+- [x] Wire entity list to EntityRegistry
+- [x] Wire property inspector to ECS Transform queries
+- [x] Hook into Bevy's LogPlugin for system log panel
 - [ ] Implement orbit camera controller
 
 ### Known Issues to Fix

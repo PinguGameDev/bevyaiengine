@@ -31,6 +31,16 @@ This document lists what is currently implemented in the AI-Native Engine and wh
 | Tokio async runtime | Done | Full async runtime for MCP server and future HTTP calls |
 | reqwest HTTP client | Done | For future Jev API integration |
 | serde + serde_json | Done | JSON serialization for MCP protocol |
+| bevy_egui integration | Done | egui 0.34 with Bevy 0.19 compatibility |
+| Developer dashboard | Done | Real-time UI for observing and controlling the engine |
+| Entity list panel | Done | Left panel showing all registered entities, clickable to select |
+| Property inspector panel | Done | Right panel showing Transform data for selected entity |
+| System log panel | Done | Bottom panel for engine log messages |
+| MCP message log panel | Done | Bottom panel for MCP tool call history |
+| Dashboard menu bar | Done | Top menu for toggling panel visibility |
+| MCP message ring buffer | Done | Stores last 100 MCP messages for dashboard display |
+| System log resource | Done | Stores last 200 log messages for dashboard display |
+| Name component integration | Done | All entities have Name components for dashboard display |
 
 ## In Progress
 
