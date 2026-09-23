@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::entity_registry::EntityRegistry;
+use crate::camera_controller::OrbitCamera;
 
 #[derive(Component)]
 pub struct StarterCube;
@@ -14,6 +15,17 @@ pub fn setup_scene(
         Name::new("starter_camera"),
         Camera3d::default(),
         Transform::from_xyz(0.0, 2.5, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
+        OrbitCamera {
+            target: Vec3::ZERO,
+            distance: 10.0,
+            yaw: 0.0,
+            pitch: 0.25,
+            target_distance: 10.0,
+            target_yaw: 0.0,
+            target_pitch: 0.25,
+            target_position: Vec3::ZERO,
+            ..default()
+        },
     )).id();
     let _ = registry.register("starter_camera".to_string(), camera);
 

@@ -1,9 +1,11 @@
+mod camera_controller;
 mod dashboard;
 mod entity_registry;
 mod mcp_server;
 mod scene;
 
 use bevy::prelude::*;
+use camera_controller::CameraControllerPlugin;
 use dashboard::DashboardPlugin;
 use entity_registry::EntityRegistry;
 use mcp_server::{McpChannel, McpPlugin};
@@ -16,9 +18,9 @@ fn main() {
         .init_resource::<EntityRegistry>()
         .add_plugins(McpPlugin)
         .add_plugins(DashboardPlugin)
+        .add_plugins(CameraControllerPlugin)
         .add_systems(Startup, setup_scene)
-        .add_systems(Update, rotate_cube)
-        .add_systems(Update, process_mcp_commands)
+        .add_systems(Update, (rotate_cube, process_mcp_commands))
         .run();
 }
 
