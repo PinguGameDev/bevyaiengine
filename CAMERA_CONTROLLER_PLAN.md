@@ -20,16 +20,15 @@ A professional viewport camera controller combining the best features from UE5, 
 | Input | Action | Notes |
 |-------|--------|-------|
 | Right mouse + WASD | Fly camera | Hold RMB to activate |
-| W | Move forward | Speed scales with distance |
-| S | Move backward | Speed scales with distance |
-| A | Move left | Speed scales with distance |
-| D | Move right | Speed scales with distance |
-| Space | Move up | Vertical movement |
-| Shift | Move down | Vertical movement |
+| W | Move forward | In camera look direction |
+| S | Move backward | Opposite of camera look direction |
+| A | Move left | Relative to camera orientation |
+| D | Move right | Relative to camera orientation |
+| E / Space | Move up | World-space vertical movement |
+| Q | Move down | World-space vertical movement |
 | Ctrl | Slow mode | Precision control (0.1x speed) |
-| Shift (in fly) | Fast mode | Speed boost (3x speed) |
+| Shift | Fast mode | Speed boost (3x speed) |
 | Mouse | Free look | Yaw/pitch rotation |
-| Q/E | Roll | Optional rotation |
 
 ### Quick Views (Numpad)
 | Input | Action | Notes |
@@ -126,8 +125,16 @@ camera.pitch = camera.pitch.clamp(-89.0_f32.to_radians(), 89.0_f32.to_radians())
 #### Fly Mode Physics
 ```rust
 // In fly mode, WASD moves relative to camera orientation
-let forward = transform.forward();
-let right = transform.right();
+let forward = Vec3::new(
+    camera.yaw.sin() * camera.pitch.cos(),
+    camera.pitch.sin(),
+    -camera.yaw.cos() * camera.pitch.cos(),
+);
+let right = Vec3::new(
+    camera.yaw.cos(),
+    0.0,
+    camera.yaw.sin(),
+);
 let up = Vec3::Y;
 
 let mut velocity = Vec3::ZERO;
@@ -135,14 +142,14 @@ if keyboard.pressed(KeyCode::KeyW) { velocity += forward; }
 if keyboard.pressed(KeyCode::KeyS) { velocity -= forward; }
 if keyboard.pressed(KeyCode::KeyA) { velocity -= right; }
 if keyboard.pressed(KeyCode::KeyD) { velocity += right; }
-if keyboard.pressed(KeyCode::Space) { velocity += up; }
-if keyboard.pressed(KeyCode::ShiftLeft) { velocity -= up; }
+if keyboard.pressed(KeyCode::KeyE) || keyboard.pressed(KeyCode::Space) { velocity += up; }
+if keyboard.pressed(KeyCode::KeyQ) { velocity -= up; }
 
 // Apply speed modifiers
-if keyboard.pressed(KeyCode::ControlLeft) { velocity *= 0.1; }
-if keyboard.pressed(KeyCode::ShiftRight) { velocity *= 3.0; }
+if keyboard.pressed(KeyCode::ControlLeft) || keyboard.pressed(KeyCode::ControlRight) { velocity *= 0.1; }
+if keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight) { velocity *= 3.0; }
 
-camera.target += velocity * camera.fly_speed * time.delta_secs();
+camera.target_position += velocity * camera.fly_speed * time.delta_secs();
 ```
 
 ## Files to Modify
@@ -174,6 +181,12 @@ camera.target += velocity * camera.fly_speed * time.delta_secs();
 - [ ] Middle mouse drag pans correctly
 - [ ] Mouse wheel zooms with distance-based speed
 - [ ] WASD fly mode works when holding right mouse
+- [ ] W moves camera forward
+- [ ] S moves camera backward
+- [ ] A moves camera left
+- [ ] D moves camera right
+- [ ] E / Space moves camera up
+- [ ] Q moves camera down
 - [ ] F key focuses on selected entity
 - [ ] Camera doesn't flip upside down (pitch clamped)
 - [ ] Smooth interpolation feels natural

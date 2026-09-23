@@ -52,6 +52,9 @@ This document lists what is currently implemented in the AI-Native Engine and wh
 | Distance-based speed | Done | Pan/zoom speed scales with camera distance |
 | Speed modifiers | Done | Ctrl for precision (0.1x), Shift for speed boost (3x) |
 | Camera mode state machine | Done | Seamless switching between orbit/pan/fly modes |
+| Camera Q/E vertical movement | Done | Q = down, E = up (UE5-style) |
+| Camera Space alternative up | Done | Space also moves camera up for accessibility |
+| Correct W/S camera movement | Done | W = forward, S = backward (fixed inversion) |
 
 ## In Progress
 

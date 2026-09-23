@@ -188,9 +188,13 @@ fn camera_input_system(
             let forward = Vec3::new(
                 camera.yaw.sin() * camera.pitch.cos(),
                 camera.pitch.sin(),
-                camera.yaw.cos() * camera.pitch.cos(),
+                -camera.yaw.cos() * camera.pitch.cos(),
             );
-            let right = Vec3::new(camera.yaw.cos(), 0.0, -camera.yaw.sin());
+            let right = Vec3::new(
+                camera.yaw.cos(),
+                0.0,
+                camera.yaw.sin(),
+            );
             let up = Vec3::Y;
             
             let mut velocity = Vec3::ZERO;
@@ -199,15 +203,15 @@ fn camera_input_system(
             if keyboard.pressed(KeyCode::KeyS) { velocity -= forward; }
             if keyboard.pressed(KeyCode::KeyA) { velocity -= right; }
             if keyboard.pressed(KeyCode::KeyD) { velocity += right; }
-            if keyboard.pressed(KeyCode::Space) { velocity += up; }
-            if shift_pressed { velocity -= up; }
+            if keyboard.pressed(KeyCode::KeyE) || keyboard.pressed(KeyCode::Space) { velocity += up; }
+            if keyboard.pressed(KeyCode::KeyQ) { velocity -= up; }
             
             if velocity.length_squared() > 0.0 {
                 velocity = velocity.normalize();
                 
                 let mut speed = camera.fly_speed;
                 if ctrl_pressed { speed *= 0.1; }
-                if shift_pressed && keyboard.pressed(KeyCode::ShiftRight) { speed *= 3.0; }
+                if shift_pressed { speed *= 3.0; }
                 
                 camera.target_position += velocity * speed * time.delta_secs();
             }
