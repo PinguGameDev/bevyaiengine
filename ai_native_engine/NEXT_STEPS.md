@@ -34,8 +34,8 @@ Goal: build a real-time observation and control surface for watching the AI work
 - [x] **System Log** — bottom strip showing Bevy logs and MCP events, filterable by level (INFO/WARN/ERROR)
 - [x] **MCP Message Log** — bottom panel showing MCP tool call history
 - [x] **Menu Bar** — top menu for toggling panel visibility
+- [x] **Viewport Camera Controls** — orbit camera (pan/zoom/rotate around scene) for better spatial understanding
 - [ ] **AI Conversation Log** — scrollable panel showing the full conversation between user and AI agent (future enhancement)
-- [ ] **Viewport Camera Controls** — orbit camera (pan/zoom/rotate around scene) for better spatial understanding
 
 ### Architecture
 
@@ -45,7 +45,7 @@ Goal: build a real-time observation and control surface for watching the AI work
 - [x] Wire entity list to EntityRegistry
 - [x] Wire property inspector to ECS Transform queries
 - [x] Hook into Bevy's LogPlugin for system log panel
-- [ ] Implement orbit camera controller
+- [x] Implement orbit camera controller with UE5-style navigation
 
 ### Known Issues to Fix
 

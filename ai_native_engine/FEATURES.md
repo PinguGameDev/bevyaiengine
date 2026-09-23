@@ -41,6 +41,17 @@ This document lists what is currently implemented in the AI-Native Engine and wh
 | MCP message ring buffer | Done | Stores last 100 MCP messages for dashboard display |
 | System log resource | Done | Stores last 200 log messages for dashboard display |
 | Name component integration | Done | All entities have Name components for dashboard display |
+| Orbit camera controller | Done | UE5-style viewport navigation with orbit/pan/fly modes |
+| Camera orbit mode | Done | Right mouse drag to orbit around focus point |
+| Camera pan mode | Done | Middle mouse drag for screen-space panning |
+| Camera zoom | Done | Mouse wheel zoom with distance-based speed |
+| Camera fly mode | Done | WASD + right mouse for 6DOF free navigation |
+| Camera focus on selection | Done | F key focuses camera on selected entity |
+| Smooth camera interpolation | Done | Buttery smooth movement with configurable smoothing |
+| Pitch clamping | Done | Prevents gimbal lock at poles (±89°) |
+| Distance-based speed | Done | Pan/zoom speed scales with camera distance |
+| Speed modifiers | Done | Ctrl for precision (0.1x), Shift for speed boost (3x) |
+| Camera mode state machine | Done | Seamless switching between orbit/pan/fly modes |
 
 ## In Progress
 
