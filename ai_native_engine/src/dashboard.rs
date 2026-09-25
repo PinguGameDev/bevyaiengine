@@ -2,7 +2,9 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiPrimaryContextPass};
 use std::collections::VecDeque;
 
+use crate::combat::Health;
 use crate::entity_registry::EntityRegistry;
+use crate::gameplay_tags::{GameplayTags, TagRegistry};
 
 pub struct DashboardPlugin;
 
@@ -120,10 +122,12 @@ fn dashboard_ui_system(
     mut contexts: EguiContexts,
     mut state: ResMut<DashboardState>,
     registry: Res<EntityRegistry>,
+    tag_registry: Res<TagRegistry>,
     mcp_log: Res<McpMessageLog>,
     system_log: Res<SystemLog>,
-    time: Res<Time>,
-    transforms: Query<(&Name, &Transform)>,
+    transforms: Query<&Transform>,
+    health_query: Query<&Health>,
+    tags_query: Query<&GameplayTags>,
 ) -> Result {
     let ctx = contexts.ctx_mut()?;
     
@@ -170,9 +174,9 @@ fn dashboard_ui_system(
                     ui.label(format!("Selected: {}", selected_name));
                     ui.separator();
                     
-                    // Find the entity's transform
-                    for (name, transform) in transforms.iter() {
-                        if name.as_str() == selected_name {
+                    if let Some(entity) = registry.get(selected_name) {
+                        // Transform
+                        if let Ok(transform) = transforms.get(entity) {
                             ui.label("Transform:");
                             ui.indent("transform", |ui| {
                                 ui.label(format!("Position: ({:.2}, {:.2}, {:.2})", 
@@ -191,8 +195,52 @@ fn dashboard_ui_system(
                                     transform.scale.y, 
                                     transform.scale.z));
                             });
-                            break;
+                            ui.separator();
                         }
+                        
+                        // Health
+                        if let Ok(health) = health_query.get(entity) {
+                            ui.label("Health:");
+                            ui.indent("health", |ui| {
+                                let ratio = health.ratio();
+                                let color = if health.is_dead {
+                                    egui::Color32::GRAY
+                                } else if ratio > 0.5 {
+                                    egui::Color32::GREEN
+                                } else if ratio > 0.25 {
+                                    egui::Color32::YELLOW
+                                } else {
+                                    egui::Color32::RED
+                                };
+                                
+                                ui.add(egui::ProgressBar::new(ratio).fill(color));
+                                ui.label(format!(
+                                    "{:.0} / {:.0} ({:.0}%){}",
+                                    health.current,
+                                    health.max,
+                                    ratio * 100.0,
+                                    if health.is_dead { " [DEAD]" } else { "" }
+                                ));
+                            });
+                            ui.separator();
+                        }
+                        
+                        // GameplayTags
+                        if let Ok(tags) = tags_query.get(entity) {
+                            ui.label("Tags:");
+                            ui.indent("tags", |ui| {
+                                let names = tags.tag_names(&tag_registry);
+                                if names.is_empty() {
+                                    ui.label("None");
+                                } else {
+                                    for name in names {
+                                        ui.label(format!("• {}", name));
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        ui.label("Entity not found in registry");
                     }
                 } else {
                     ui.label("No entity selected");
