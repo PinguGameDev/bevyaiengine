@@ -1,6 +1,7 @@
 mod camera_controller;
 mod dashboard;
 mod entity_registry;
+mod gameplay_tags;
 mod mcp_server;
 mod scene;
 
@@ -8,6 +9,7 @@ use bevy::prelude::*;
 use camera_controller::CameraControllerPlugin;
 use dashboard::DashboardPlugin;
 use entity_registry::EntityRegistry;
+use gameplay_tags::{GameplayTagsPlugin, register_common_tags};
 use mcp_server::{McpChannel, McpPlugin};
 use scene::{rotate_cube, setup_scene};
 
@@ -19,7 +21,8 @@ fn main() {
         .add_plugins(McpPlugin)
         .add_plugins(DashboardPlugin)
         .add_plugins(CameraControllerPlugin)
-        .add_systems(Startup, setup_scene)
+        .add_plugins(GameplayTagsPlugin)
+        .add_systems(Startup, (setup_scene, register_common_tags))
         .add_systems(Update, (rotate_cube, process_mcp_commands))
         .run();
 }
