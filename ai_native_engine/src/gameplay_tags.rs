@@ -146,6 +146,13 @@ impl GameplayTags {
     pub fn new() -> Self {
         Self::default()
     }
+
+    /// Creates a tag set from a slice of tag IDs.
+    pub fn from_ids(tag_ids: &[u32]) -> Self {
+        Self {
+            tag_ids: tag_ids.iter().copied().collect(),
+        }
+    }
     
     /// Add a tag by ID.
     pub fn add(&mut self, tag_id: u32) {

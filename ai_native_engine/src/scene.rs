@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use crate::entity_registry::EntityRegistry;
 use crate::camera_controller::OrbitCamera;
+use crate::combat::Health;
+use crate::gameplay_tags::{GameplayTags, TagRegistry, tags};
 
 #[derive(Component)]
 pub struct StarterCube;
@@ -10,6 +12,7 @@ pub fn setup_scene(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut registry: ResMut<EntityRegistry>,
+    tag_registry: Res<TagRegistry>,
 ) {
     let camera = commands.spawn((
         Name::new("starter_camera"),
@@ -80,6 +83,36 @@ pub fn setup_scene(
         )).id();
         let _ = registry.register(name.to_string(), entity);
     }
+
+    // Spawn ARPG test entities with health and faction tags.
+    let player_id = tag_registry.get_id(tags::FACTION_PLAYER).unwrap_or(0);
+    let enemy_id = tag_registry.get_id(tags::FACTION_ENEMY).unwrap_or(0);
+
+    let player = commands.spawn((
+        Name::new("player"),
+        Mesh3d(meshes.add(Cuboid::default())),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(0.2, 0.4, 1.0),
+            ..default()
+        })),
+        Transform::from_xyz(-1.5, 0.5, 0.0),
+        Health::new(100.0),
+        GameplayTags::from_ids(&[player_id]),
+    )).id();
+    let _ = registry.register("player".to_string(), player);
+
+    let enemy = commands.spawn((
+        Name::new("enemy"),
+        Mesh3d(meshes.add(Cuboid::default())),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(1.0, 0.1, 0.1),
+            ..default()
+        })),
+        Transform::from_xyz(1.5, 0.5, 0.0),
+        Health::new(50.0),
+        GameplayTags::from_ids(&[enemy_id]),
+    )).id();
+    let _ = registry.register("enemy".to_string(), enemy);
 
     info!("AI-Native Engine starter scene loaded.");
 }

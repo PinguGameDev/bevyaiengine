@@ -1,4 +1,5 @@
 mod camera_controller;
+mod combat;
 mod dashboard;
 mod entity_registry;
 mod gameplay_tags;
@@ -7,6 +8,7 @@ mod scene;
 
 use bevy::prelude::*;
 use camera_controller::CameraControllerPlugin;
+use combat::CombatPlugin;
 use dashboard::DashboardPlugin;
 use entity_registry::EntityRegistry;
 use gameplay_tags::{GameplayTagsPlugin, register_common_tags};
@@ -22,7 +24,8 @@ fn main() {
         .add_plugins(DashboardPlugin)
         .add_plugins(CameraControllerPlugin)
         .add_plugins(GameplayTagsPlugin)
-        .add_systems(Startup, (setup_scene, register_common_tags))
+        .add_plugins(CombatPlugin)
+        .add_systems(Startup, (register_common_tags, setup_scene).chain())
         .add_systems(Update, (rotate_cube, process_mcp_commands))
         .run();
 }
