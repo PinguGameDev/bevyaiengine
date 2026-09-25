@@ -8,7 +8,7 @@ mod scene;
 
 use bevy::prelude::*;
 use camera_controller::CameraControllerPlugin;
-use combat::CombatPlugin;
+use combat::{CombatPlugin, DamageEvent, Health};
 use dashboard::DashboardPlugin;
 use entity_registry::EntityRegistry;
 use gameplay_tags::{GameplayTagsPlugin, register_common_tags};
@@ -37,6 +37,7 @@ fn process_mcp_commands(
     mut registry: ResMut<EntityRegistry>,
     mcp_channel: Option<Res<McpChannel>>,
     transforms: Query<&Transform>,
+    mut health_query: Query<&mut Health>,
 ) {
     let Some(channel) = mcp_channel else { return };
 
@@ -186,6 +187,90 @@ fn process_mcp_commands(
                     "No entities in scene".to_string()
                 } else {
                     format!("Entities: {}", entities.join(", "))
+                }
+            }
+            "get_health" => {
+                let name = &cmd.args[0];
+                match registry.get(name) {
+                    Some(entity) => match health_query.get(entity) {
+                        Ok(health) => format!(
+                            "Health of '{}': {}/{} ({:.0}%)",
+                            name,
+                            health.current,
+                            health.max,
+                            health.ratio() * 100.0
+                        ),
+                        Err(_) => format!("Entity '{}' has no Health component", name),
+                    },
+                    None => format!("Entity '{}' not found", name),
+                }
+            }
+            "set_health" => {
+                let name = &cmd.args[0];
+                let amount: f32 = cmd.args[1].parse().unwrap_or(0.0);
+                match registry.get(name) {
+                    Some(entity) => match health_query.get_mut(entity) {
+                        Ok(mut health) => {
+                            health.current = amount.clamp(0.0, health.max);
+                            health.is_dead = health.current <= 0.0;
+                            format!("Health of '{}' set to {}/{}", name, health.current, health.max)
+                        }
+                        Err(_) => format!("Entity '{}' has no Health component", name),
+                    },
+                    None => format!("Entity '{}' not found", name),
+                }
+            }
+            "damage" => {
+                let name = &cmd.args[0];
+                let amount: f32 = cmd.args[1].parse().unwrap_or(0.0);
+                match registry.get(name) {
+                    Some(entity) => {
+                        commands.trigger(DamageEvent::new(entity, amount));
+                        format!("Dealt {} damage to '{}'", amount, name)
+                    }
+                    None => format!("Entity '{}' not found", name),
+                }
+            }
+            "heal" => {
+                let name = &cmd.args[0];
+                let amount: f32 = cmd.args[1].parse().unwrap_or(0.0);
+                match registry.get(name) {
+                    Some(entity) => match health_query.get_mut(entity) {
+                        Ok(mut health) => {
+                            let before = health.current;
+                            health.heal(amount);
+                            format!(
+                                "Healed '{}' for {} ({} -> {})",
+                                name,
+                                amount,
+                                before,
+                                health.current
+                            )
+                        }
+                        Err(_) => format!("Entity '{}' has no Health component", name),
+                    },
+                    None => format!("Entity '{}' not found", name),
+                }
+            }
+            "attack" => {
+                let attacker_name = &cmd.args[0];
+                let target_name = &cmd.args[1];
+                let amount: f32 = cmd.args[2].parse().unwrap_or(10.0);
+
+                match (registry.get(attacker_name), registry.get(target_name)) {
+                    (Some(attacker), Some(target)) => {
+                        if health_query.get(attacker).is_err() {
+                            format!("Attacker '{}' has no Health component", attacker_name)
+                        } else {
+                            commands.trigger(DamageEvent::new(target, amount));
+                            format!(
+                                "'{}' attacked '{}' for {} damage",
+                                attacker_name, target_name, amount
+                            )
+                        }
+                    }
+                    (None, _) => format!("Attacker '{}' not found", attacker_name),
+                    (_, None) => format!("Target '{}' not found", target_name),
                 }
             }
             "screenshot" => {
