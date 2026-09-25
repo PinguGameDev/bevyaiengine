@@ -16,3 +16,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+# Documentation and planning files (kept local)
+*_RESEARCH.md
+*_PLAN.md
+JEV_INTEGRATION_PLAN.md
+MCP_SERVER_PLAN.md
